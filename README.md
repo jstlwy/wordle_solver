@@ -37,6 +37,11 @@ Usage of ./wordle_solver:
     	Show how the user's arguments were interpreted.
 ```
 
+Example:
+```
+./wordle_solver -known 1h,3m,4e -exclude o,u,s,b,l,a,c,i
+```
+
 ## Credits
 
 Text file sources:
