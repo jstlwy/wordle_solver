@@ -1,0 +1,8 @@
+# Executable
+wordle_solver
+
+# Results .txt file
+results.txt
+
+# macOS
+.DS_Store
