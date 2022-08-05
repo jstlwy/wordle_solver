@@ -70,18 +70,22 @@ func main() {
 		"that the text file was read correctly.")
 	verbose      := flag.Bool("verbose", false,
 		"Show how the user's arguments were interpreted.")
-	wordFilePath := flag.String("file", "freebsd_words.txt",
+	wordFilePath := flag.String("dict", "freebsd_words.txt",
 		"User-specified text file from which to read in English-language words.")
 	wordLength   := flag.Int("length", 5,
 		"The length of the word to be found.")
 	excludeArg   := flag.String("exclude", "",
 		"List of letters that are known to not be in the word. " +
 		"Separate multiple with a comma. For example: -exclude m,s,e")
+	includeArg   := flag.String("include", "",
+		"List of letters that are known to be in the word but whose " +
+		"positions are unknown. Separate multiple with a comma. " +
+		"For example: -include m,s,e")
 	knownArg     := flag.String("known", "",
 		"List of known positions (zero-indexed) and letters. " +
 		"Separate multiple with a comma. For example: -known 0m,1o,2u")
-	saveToTxt    := flag.Bool("txt", false,
-		"Write the possible solutions to a .txt file.")
+	saveToTxt    := flag.Bool("save", false,
+		"Save the potential solutions in a .txt file.")
 	flag.Parse()
 
 	// -----------------------
@@ -98,7 +102,7 @@ func main() {
 	excludeArgs := strings.Split(*excludeArg, ",")
 	for _, arg := range excludeArgs {
 		if len(arg) == 1 {
-			matched, err := regexp.Match(`\w`, []byte(arg))
+			matched, err := regexp.MatchString(`\w`, arg)
 			if err != nil {
 				fmt.Printf("Error when using regexp " +
 					"on letters to exclude: %v\n", err)
@@ -135,6 +139,40 @@ func main() {
 		fmt.Printf("Valid letters:\n%v\n\n", validLetters)
 	}
 
+	// Create slice of letters to include
+	var includedLetters []string
+	includeArgs := strings.Split(*includeArg, ",")
+	for _, arg := range includeArgs {
+		if len(arg) == 1 {
+			matched, err := regexp.MatchString(`\w`, arg)
+			if err != nil {
+				fmt.Printf("Error when using regexp " +
+					"on letters to include: %v\n", err)
+			} else if matched {
+				includedLetters = append(includedLetters, arg)
+			}
+		}
+	}
+	if len(includedLetters) > *wordLength {
+		fmt.Println("Error: Number of letters to include is greater than " +
+			"the number of letters in the word to find.")
+		os.Exit(1)
+	}
+	/*
+	// Unfortunately, regexp doesn't support lookahead
+	includeRegex := ""
+	if len(includedLetters) > 0 {
+		for _, letter := range includedLetters {
+			includeRegex += "(?=.*" + letter + ")"
+		}
+		includeRegex += ".*"
+	}
+	*/
+	if len(includedLetters) > 0 && *verbose {
+		fmt.Println("Letters in the word whose positions are unknown:")
+		fmt.Printf("%s\n\n", includedLetters)
+	}
+
 	// Create map of known positions
 	knownPositions := make(map[int]string)
 	knownArgs := strings.Split(*knownArg, ",")
@@ -145,7 +183,7 @@ func main() {
 	}
 	for _, arg := range knownArgs {
 		if len(arg) > 1 {
-			matched, err := regexp.Match(`\d\w`, []byte(arg))
+			matched, err := regexp.MatchString(`\d\w`, arg)
 			if err != nil {
 				fmt.Printf("Error when using regexp on " +
 					"-known arg \"%s\": %v\n", arg, err)
@@ -237,7 +275,28 @@ func main() {
 		wordMap,
 	)
 
-	fmt.Println("Possible solutions:")
+	// Filter out words without -include letters
+	if len(includedLetters) > 0 {
+		var filteredWords []string
+		for _, word := range possibleWords {
+			wordIsValid := true
+			for _, letter := range includedLetters {
+				contained := strings.Contains(word, letter)
+				wordIsValid = wordIsValid && contained
+				if !wordIsValid {
+					break
+				}
+			}
+			if wordIsValid {
+				filteredWords = append(filteredWords, word)
+			}
+		}
+		if len(possibleWords) > len(filteredWords) {
+			possibleWords = filteredWords
+		}
+	}
+
+	fmt.Println("Potential solutions:")
 	for _, word := range possibleWords {
 		fmt.Println(word)
 	}
@@ -258,7 +317,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		txtFile.WriteString("Possible solutions:\n")
+		txtFile.WriteString("Potential solutions:\n")
 		for _, word := range possibleWords {
 			txtFile.WriteString(word + "\n")
 		}

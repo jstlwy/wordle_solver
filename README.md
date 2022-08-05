@@ -1,7 +1,8 @@
 # Wordle Solver
 
-Finds all possible words given letters that are known to be at certain positions
-and letters that are known to not be present in the solution.
+Finds all possible words given letters that are known to be in the solution
+(positions can be specified or unspecified)
+and letters that are known to not be in the solution.
 
 ## Installation
 
@@ -23,23 +24,25 @@ $ ./wordle_solver -help
 Usage of ./wordle_solver:
   -debug
     	Print the dictionary map to ensure that the text file was read correctly.
+  -dict string
+    	User-specified text file from which to read in English-language words. (default "freebsd_words.txt")
   -exclude string
     	List of letters that are known to not be in the word. Separate multiple with a comma. For example: -exclude m,s,e
-  -file string
-    	User-specified text file from which to read in English-language words. (default "freebsd_words.txt")
+  -include string
+    	List of letters that are known to be in the word but whose positions are unknown. Separate multiple with a comma. For example: -include m,s,e
   -known string
     	List of known positions (zero-indexed) and letters. Separate multiple with a comma. For example: -known 0m,1o,2u
   -length int
     	The length of the word to be found. (default 5)
-  -txt
-    	Write the possible solutions to a .txt file.
+  -save
+    	Save the potential solutions in a .txt file.
   -verbose
     	Show how the user's arguments were interpreted.
 ```
 
 Example:
 ```
-./wordle_solver -known 1h,3m,4e -exclude o,u,s,b,l,a,c,i
+./wordle_solver -exclude m,o,a,c -include u -known 0s,4e -verbose
 ```
 
 ## Credits
