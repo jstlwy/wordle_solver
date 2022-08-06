@@ -31,7 +31,7 @@ Usage of ./wordle_solver:
   -include string
     	List of letters that are known to be in the word but whose positions are unknown. Separate multiple with a comma. For example: -include m,s,e
   -known string
-    	List of known positions (zero-indexed) and letters. Separate multiple with a comma. For example: -known 0m,1o,2u
+    	List of known positions and letters. Separate multiple with a comma. For example: -known 1m,2o,3u
   -length int
     	The length of the word to be found. (default 5)
   -save
@@ -42,7 +42,7 @@ Usage of ./wordle_solver:
 
 Example:
 ```
-./wordle_solver -exclude m,o,a,c -include u -known 0s,4e -verbose
+./wordle_solver -exclude m,o,a,c -include u -known 1s,5e -dict infochimp_words_alpha.txt
 ```
 
 ## Credits

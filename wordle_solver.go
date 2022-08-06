@@ -76,14 +76,16 @@ func main() {
 		"The length of the word to be found.")
 	excludeArg   := flag.String("exclude", "",
 		"List of letters that are known to not be in the word. " +
-		"Separate multiple with a comma. For example: -exclude m,s,e")
+		"Separate multiple with a comma. " +
+		"For example: -exclude m,s,e")
 	includeArg   := flag.String("include", "",
 		"List of letters that are known to be in the word but whose " +
 		"positions are unknown. Separate multiple with a comma. " +
 		"For example: -include m,s,e")
 	knownArg     := flag.String("known", "",
-		"List of known positions (zero-indexed) and letters. " +
-		"Separate multiple with a comma. For example: -known 0m,1o,2u")
+		"List of known positions and letters. " +
+		"Separate multiple with a comma. " +
+		"For example: -known 1m,2o,3u")
 	saveToTxt    := flag.Bool("save", false,
 		"Save the potential solutions in a .txt file.")
 	flag.Parse()
@@ -192,18 +194,20 @@ func main() {
 				if err != nil {
 					fmt.Printf("Error when converting first character in " +
 						"-known arg \"%s\" to int: %v\n", arg, err)
-				} else if position >= *wordLength {
-					fmt.Printf("Error: Position in -known arg \"%s\" exceeds " +
-						"word length (%d).\n", arg, *wordLength)
-				} else {
-					letter := strings.ToLower(string(arg[1]))
-					if excludedLetters[letter] == true {
-						fmt.Printf("Letter \"%s\" already in " +
-							"excluded letters list.\n", letter)
-					} else {
-						knownPositions[position] = letter
-					}
+					continue
 				}
+				if position <= 0 || position > *wordLength {
+					fmt.Println("Error: Invalid position in -known arg.")
+					continue
+				}
+				position -= 1
+				letter := strings.ToLower(string(arg[1]))
+				if excludedLetters[letter] == true {
+					fmt.Printf("Letter \"%s\" cannot be known and excluded " +
+						"simultaneously.\n", letter)
+					continue
+				}
+				knownPositions[position] = letter
 			}
 		}
 	}
