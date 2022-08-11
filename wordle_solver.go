@@ -99,12 +99,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	if len(*excludeArg) == 0 && len(*includeArg) == 0 && len(*knownArg) == 0 {
+		fmt.Println("Error: No arguments were provided.")
+		os.Exit(1)
+	}
+
 	// Create map of letters to exclude
 	excludedLetters := make(map[string]bool)
 	excludeArgs := strings.Split(*excludeArg, ",")
 	for _, arg := range excludeArgs {
 		if len(arg) == 1 {
-			matched, err := regexp.MatchString(`\w`, arg)
+			matched, err := regexp.MatchString(`[a-zA-Z]`, arg)
 			if err != nil {
 				fmt.Printf("Error when using regexp " +
 					"on letters to exclude: %v\n", err)
@@ -146,7 +151,7 @@ func main() {
 	includeArgs := strings.Split(*includeArg, ",")
 	for _, arg := range includeArgs {
 		if len(arg) == 1 {
-			matched, err := regexp.MatchString(`\w`, arg)
+			matched, err := regexp.MatchString(`[a-zA-Z]`, arg)
 			if err != nil {
 				fmt.Printf("Error when using regexp " +
 					"on letters to include: %v\n", err)
@@ -184,8 +189,8 @@ func main() {
 		os.Exit(1)
 	}
 	for _, arg := range knownArgs {
-		if len(arg) > 1 {
-			matched, err := regexp.MatchString(`\d\w`, arg)
+		if len(arg) == 2 {
+			matched, err := regexp.MatchString(`\d[a-zA-Z]`, arg)
 			if err != nil {
 				fmt.Printf("Error when using regexp on " +
 					"-known arg \"%s\": %v\n", arg, err)
@@ -222,6 +227,12 @@ func main() {
 			}
 		}
 		fmt.Printf("Current progress:\n%s\n\n", wordSoFar)
+	}
+
+	// Do not proceed if none of the arguments were valid
+	if len(validLetters) == 26 && len(includedLetters) == 0 && len(knownPositions) == 0 {
+		fmt.Println("Error: No valid arguments were provided.")
+		os.Exit(1)
 	}
 
 	// --------------------
